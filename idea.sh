@@ -52,7 +52,7 @@ if [ -n "$IDEA_JDK" ] && [ -x "$IDEA_JDK/bin/java" ]; then
   JRE="$IDEA_JDK"
 ## You added this.  Because gentoo is system vm is still java 8 ##
 else
-  [[ -d ""/usr/lib64/openjdk-11 ]] && JDK="/usr/lib64/openjdk-11" && JRE=$JDK 
+  [[ -d "/usr/lib64/openjdk-11" ]] && JDK="/usr/lib64/openjdk-11" && JRE=$JDK 
   echo "using $JDK as JDK"
 fi
 
