@@ -50,10 +50,10 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
 # shellcheck disable=SC2154
 if [ -n "$IDEA_JDK" ] && [ -x "$IDEA_JDK/bin/java" ]; then
   JRE="$IDEA_JDK"
-## You added this.  Because gentoo is system vm is still java 8 ##
+## You added this.  Because Gentoo's system vm is still java 8 and idea requires newer java ##
 else
   [[ -d "/usr/lib64/openjdk-11" ]] && JDK="/usr/lib64/openjdk-11" && JRE=$JDK 
-  echo "using $JDK as JDK"
+  echo "Using $JDK as JDK"
 fi
 
 BITS=""
