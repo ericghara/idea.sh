@@ -5,6 +5,8 @@
 # IntelliJ IDEA startup script.
 # ---------------------------------------------------------------------
 
+JDK_VERSION=11 # change this to point to different JDKs on your machine, will look in /usr/lib64/openjdk-#
+
 message()
 {
   TITLE="Cannot start IntelliJ IDEA"
@@ -52,7 +54,7 @@ if [ -n "$IDEA_JDK" ] && [ -x "$IDEA_JDK/bin/java" ]; then
   JRE="$IDEA_JDK"
 ## You added this.  Because Gentoo's system vm is still java 8 and idea requires newer java ##
 else
-  [[ -d "/usr/lib64/openjdk-11" ]] && JDK="/usr/lib64/openjdk-11" && JRE=$JDK 
+  [[ -d "/usr/lib64/openjdk-$JDK_VERSION" ]] && JDK="/usr/lib64/openjdk-$JDK_VERSION" && JRE=$JDK 
   echo "Using $JDK as JDK"
 fi
 
