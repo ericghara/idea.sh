@@ -1,11 +1,9 @@
 #!/bin/sh
-# Copyright 2000-2021 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
+# Copyright 2000-2022 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 
 # ---------------------------------------------------------------------
 # IntelliJ IDEA startup script.
 # ---------------------------------------------------------------------
-
-JDK_VERSION=11 # change this to point to different JDKs on your machine, will look in /usr/lib64/openjdk-#
 
 message()
 {
@@ -24,9 +22,9 @@ message()
 }
 
 if [ -z "$(command -v uname)" ] || [ -z "$(command -v realpath)" ] || [ -z "$(command -v dirname)" ] || [ -z "$(command -v cat)" ] || \
-   [ -z "$(command -v egrep)" ]; then
+   [ -z "$(command -v grep)" ]; then
   TOOLS_MSG="Required tools are missing:"
-  for tool in uname realpath egrep dirname cat ; do
+  for tool in uname realpath grep dirname cat ; do
      test -z "$(command -v $tool)" && TOOLS_MSG="$TOOLS_MSG $tool"
   done
   message "$TOOLS_MSG (SHELL=$SHELL PATH=$PATH)"
@@ -52,23 +50,22 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
 JRE=""
 
 # shellcheck disable=SC2154
-if [ -n "$IDEA_JDK" ] && [ -x "$IDEA_JDK/bin/java" ]; then
+if [ -n "$IDEA_JDK" ] && [ -x "$IDEA_JDK/bin/java" ] && false; then #### you added false, it's finding old pycharms IDEA_JDK ####
   JRE="$IDEA_JDK"
-## You added this.  Because Gentoo's system vm is still java 8 and idea requires newer java ##
-else
-  [[ -d "/usr/lib64/openjdk-$JDK_VERSION" ]] && JDK="/usr/lib64/openjdk-$JDK_VERSION" && JRE=$JDK 
-  echo "Using $JDK as JDK"
 fi
 
-if [ -z "$JRE" ] && [ -s "${CONFIG_HOME}/JetBrains/IdeaIC2022.1/idea.jdk" ]; then
-  USER_JRE=$(cat "${CONFIG_HOME}/JetBrains/IdeaIC2022.1/idea.jdk")
+if [ -z "$JRE" ] && [ -s "${CONFIG_HOME}/JetBrains/IntelliJIdea2022.3/idea.jdk" ]; then
+  USER_JRE=$(cat "${CONFIG_HOME}/JetBrains/IntelliJIdea2022.3/idea.jdk")
   if [ -x "$USER_JRE/bin/java" ]; then
     JRE="$USER_JRE"
   fi
 fi
 
-if [ -z "$JRE" ] && [ "$OS_TYPE" = "Linux" ] && [ "$OS_ARCH" = "x86_64" ] && [ -d "$IDE_HOME/jbr" ]; then
-  JRE="$IDE_HOME/jbr"
+if [ -z "$JRE" ] && [ "$OS_TYPE" = "Linux" ] && [ -f "$IDE_HOME/jbr/release" ]; then
+  JBR_ARCH="OS_ARCH=\"$OS_ARCH\""
+  if grep -q -e "$JBR_ARCH" "$IDE_HOME/jbr/release" ; then
+    JRE="$IDE_HOME/jbr"
+  fi
 fi
 
 # shellcheck disable=SC2153
@@ -119,8 +116,8 @@ else
   # ... [+ <IDE_HOME>.vmoptions (Toolbox) || <config_directory>/<bin_name>.vmoptions]
   if [ -r "${IDE_HOME}.vmoptions" ]; then
     USER_VM_OPTIONS_FILE="${IDE_HOME}.vmoptions"
-  elif [ -r "${CONFIG_HOME}/JetBrains/IdeaIC2022.1/idea64.vmoptions" ]; then
-    USER_VM_OPTIONS_FILE="${CONFIG_HOME}/JetBrains/IdeaIC2022.1/idea64.vmoptions"
+  elif [ -r "${CONFIG_HOME}/JetBrains/IntelliJIdea2022.3/idea64.vmoptions" ]; then
+    USER_VM_OPTIONS_FILE="${CONFIG_HOME}/JetBrains/IntelliJIdea2022.3/idea64.vmoptions"
   fi
 fi
 
@@ -142,73 +139,47 @@ fi
 CLASS_PATH="$IDE_HOME/lib/util.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/app.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/3rd-party-rt.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jna.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/platform-statistics-devkit.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jps-model.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/rd-core.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/rd-framework.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/stats.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/protobuf.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/external-system-rt.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jsp-base-openapi.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/forms_rt.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/intellij-test-discovery.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/rd-swing.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/annotations.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/groovy.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/3rd-party-native.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/annotations-java5.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/async-profiler-windows.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/async-profiler.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/byte-buddy-agent.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/dom-impl.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/dom-openapi.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/duplicates-analysis.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/error-prone-annotations.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/externalProcess-rt.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/grpc-netty-shaded.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/idea_rt.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/intellij-coverage-agent-1.0.656.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/intellij-coverage-agent-1.0.682.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jsch-agent.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jsp-base.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/junit.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/junit4.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/junixsocket-core.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/lz4-java.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/kotlin-script-runtime.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/platform-objectSerializer-annotations.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/pty4j.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/rd-text.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/structuralsearch.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/tests_bootstrap.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/uast-tests.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/rd.jar"
+CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/tools-testsBootstrap.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/util_rt.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/winp.jar"
 CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/ant/lib/ant.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/dbus-java-3.2.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/java-utils-1.0.6.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-unixsocket-0.23.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-ffi-2.1.10.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jffi-1.2.19.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jffi-1.2.19-native.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/asm-7.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/asm-commons-7.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/asm-analysis-7.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/asm-tree-7.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/asm-util-7.1.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-a64asm-1.0.0.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-x86asm-1.0.2.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-constants-0.9.12.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-enxio-0.21.jar"
-CLASS_PATH="$CLASS_PATH:$IDE_HOME/lib/jnr-posix-3.0.50.jar"
 
 # ---------------------------------------------------------------------
 # Run the IDE.
 # ---------------------------------------------------------------------
 IFS="$(printf '\n\t')"
 # shellcheck disable=SC2086
-"$JAVA_BIN" \
+exec "$JAVA_BIN" \
   -classpath "$CLASS_PATH" \
   ${VM_OPTIONS} \
   "-XX:ErrorFile=$HOME/java_error_in_idea_%p.log" \
   "-XX:HeapDumpPath=$HOME/java_error_in_idea_.hprof" \
   "-Djb.vmOptionsFile=${USER_VM_OPTIONS_FILE:-${VM_OPTIONS_FILE}}" \
   ${IDE_PROPERTIES_PROPERTY} \
-  -Djava.system.class.loader=com.intellij.util.lang.PathClassLoader -Didea.strict.classpath=true -Didea.vendor.name=JetBrains -Didea.paths.selector=IdeaIC2022.1 -Didea.platform.prefix=Idea -Didea.jre.check=true -Dsplash=true \
+  -Djava.system.class.loader=com.intellij.util.lang.PathClassLoader -Didea.vendor.name=JetBrains -Didea.paths.selector=IntelliJIdea2022.3 "-Djna.boot.library.path=$IDE_HOME/lib/jna/amd64" "-Dpty4j.preferred.native.folder=$IDE_HOME/lib/pty4j" -Djna.nosys=true -Djna.nounpack=true -Dsplash=true --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.vm=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.fs=ALL-UNNAMED --add-opens=java.base/sun.security.ssl=ALL-UNNAMED --add-opens=java.base/sun.security.util=ALL-UNNAMED --add-opens=java.desktop/com.sun.java.swing.plaf.gtk=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED --add-opens=java.desktop/java.awt.dnd.peer=ALL-UNNAMED --add-opens=java.desktop/java.awt.event=ALL-UNNAMED --add-opens=java.desktop/java.awt.image=ALL-UNNAMED --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED --add-opens=java.desktop/java.awt.font=ALL-UNNAMED --add-opens=java.desktop/javax.swing=ALL-UNNAMED --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED --add-opens=java.desktop/javax.swing.text.html=ALL-UNNAMED --add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED --add-opens=java.desktop/sun.awt.datatransfer=ALL-UNNAMED --add-opens=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.desktop/sun.awt=ALL-UNNAMED --add-opens=java.desktop/sun.font=ALL-UNNAMED --add-opens=java.desktop/sun.java2d=ALL-UNNAMED --add-opens=java.desktop/sun.swing=ALL-UNNAMED --add-opens=jdk.attach/sun.tools.attach=ALL-UNNAMED --add-opens=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-opens=jdk.internal.jvmstat/sun.jvmstat.monitor=ALL-UNNAMED --add-opens=jdk.jdi/com.sun.tools.jdi=ALL-UNNAMED \
   com.intellij.idea.Main \
   "$@"
